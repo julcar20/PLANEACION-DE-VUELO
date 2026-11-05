@@ -235,6 +235,12 @@ details.sec[open]>summary{margin-bottom:10px}
 .toast.warn{border-left-color:var(--warn)}.toast.bad{border-left-color:var(--bad)}.toast.ok{border-left-color:var(--ok)}
 @keyframes tin{from{transform:translateY(8px);opacity:0}}
 .maplibregl-ctrl-attrib{font-size:10px}
+.maplibregl-popup-content{color:#111;font-size:12px;line-height:1.45;max-width:320px;padding:10px 12px}
+.maplibregl-popup-content b.z{display:block;font-size:13px}
+.zcat{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;color:#fff;margin:3px 0}
+#legZonas{position:absolute;right:12px;bottom:110px;z-index:4;background:rgba(8,14,26,.85);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:11px;color:var(--mut)}
+#legZonas div{display:flex;align-items:center;gap:7px;margin:2px 0}
+#legZonas i{width:14px;height:10px;border-radius:2px;display:inline-block}
 body.artefacto .solo-html{display:none!important}
 body.drive-fijo .solo-config{display:none!important}
 body:not(.drive-fijo) .solo-fijo{display:none!important}
@@ -349,6 +355,7 @@ body:not(.artefacto) .solo-art{display:none!important}
           <li>Si conoce el GSD que necesita, escríbalo en “GSD objetivo” y la altura se calcula sola.</li>
           <li>Cargue el polígono en <b>KML o KMZ</b> (o dibújelo en el mapa). Si el archivo trae varios polígonos, escoja cuál usar.</li>
           <li>Opcional: use “Fijar despegue” y haga clic en el mapa donde va a despegar el dron.</li>
+          <li>En el mapa aparecen las <b>zonas UAS de la Aerocivil</b> (tomadas en vivo del Visor Geográfico UAS): rojo, prohibido volar; naranja, restringido o con coordinación; amarillo, a 6–9 km de un aeropuerto, con máximo 61 m. Haga clic sobre una zona para ver su detalle. Al calcular, la página revisa si el área de vuelo o el despegue tocan alguna zona y lo avisa en los resultados.</li>
           <li>Presione <b>Calcular plan de vuelo</b>. Aparecen los resultados, las alertas y el plan en el mapa.</li>
           <li>Use la barra inferior para <b>reproducir la simulación</b>: cambie la velocidad, mueva la línea de tiempo y escoja la vista (seguimiento 3D, cenital o libre). Arriba a la derecha está lo que “ve” la cámara.</li>
           <li>Exporte el <b>KMZ para Google Earth Pro</b>, el KML, el GeoJSON (como la versión original), el CSV de puntos de toma o el informe en PDF.</li>
@@ -613,6 +620,7 @@ body:not(.artefacto) .solo-art{display:none!important}
       <h4>Resultados</h4>
       <div class="res" id="res"></div>
       <div class="warns" id="warns"></div>
+      <div class="solo-html" id="zonasRes" style="margin-top:10px"></div>
     </div>
 
     <div class="sec" id="secExp" style="display:none">
@@ -642,6 +650,7 @@ body:not(.artefacto) .solo-art{display:none!important}
         <option value="esri">Satélite</option><option value="esriL">Satélite + nombres</option><option value="osm">OpenStreetMap</option><option value="topo">Topográfico</option>
       </select>
       <label class="solo-html" style="display:flex;align-items:center;gap:5px;margin:0;color:var(--txt);font-size:12px;padding:0 4px"><input type="checkbox" id="chkTerr" checked onchange="Mapa.relieve(this.checked)"> Relieve 3D</label>
+      <label class="solo-html" style="display:flex;align-items:center;gap:5px;margin:0;color:var(--txt);font-size:12px;padding:0 4px" title="Visor Geográfico UAS – Aerocivil"><input type="checkbox" id="chkZonas" checked onchange="Zonas.ver(this.checked)"> Zonas Aerocivil</label>
       <label style="display:flex;align-items:center;gap:5px;margin:0;color:var(--txt);font-size:12px;padding:0 4px"><input type="checkbox" id="chkFp" onchange="Mapa.verHuellas(this.checked)"> Huellas planeadas</label>
       <button class="btn" onclick="Mapa.encuadrar()">Encuadrar</button>
     </div>
@@ -670,6 +679,13 @@ body:not(.artefacto) .solo-art{display:none!important}
       <div class="ft"><span id="cvFoto">Foto —</span><span id="cvHuella">—</span></div>
     </div>
 
+    <div id="legZonas" class="solo-html">
+      <b style="color:var(--txt)">Zonas UAS · Aerocivil</b>
+      <div><i style="background:#ef4444"></i>Prohibido volar</div>
+      <div><i style="background:#f97316"></i>Restringido / coordinar</div>
+      <div><i style="background:#facc15"></i>Aeropuerto 6–9 km: máx. 61 m</div>
+      <div style="margin-top:3px"><a href="https://aerocivil.maps.arcgis.com/apps/instant/media/index.html?appid=b4be4d501c8d4bcabd0c35297521c16e" target="_blank" rel="noopener">Abrir visor oficial</a></div>
+    </div>
     <div class="legend" id="legend">
       <div><i style="background:#22d3ee"></i>Líneas de vuelo</div>
       <div><i style="background:#fff;opacity:.7"></i>Tránsitos</div>
@@ -1043,7 +1059,11 @@ function planificar(coords,p,homeLL){
 
   const largoLineas=lineas.reduce((s,l)=>s+l.largo,0), largoTotal=acum, T=t;
   const usable=p.aut*60*(1-p.res/100);
-  return {z,p,gsd,across,along,sep,base,lineas,fotos,area,home,homeLL:homeLLf,legs,T,tiemposFoto,largoLineas,largoTotal,usable,
+  // rectángulo que cubre todas las fotos (área real de operación) para revisar las zonas restringidas
+  let ux0=Infinity,ux1=-Infinity,uy0=Infinity,uy1=-Infinity;
+  fotos.forEach(f=>{ const q=rot(f.utm); ux0=Math.min(ux0,q[0]); ux1=Math.max(ux1,q[0]); uy0=Math.min(uy0,q[1]); uy1=Math.max(uy1,q[1]); });
+  const opArea=[[ux0-across/2,uy0-along/2],[ux1+across/2,uy0-along/2],[ux1+across/2,uy1+along/2],[ux0-across/2,uy1+along/2]].map(([u,v])=>toLL(u,v));
+  return {opArea,z,p,gsd,across,along,sep,base,lineas,fotos,area,home,homeLL:homeLLf,legs,T,tiemposFoto,largoLineas,largoTotal,usable,
     baterias:Math.max(1,Math.ceil(T/Math.max(60,usable))), intervalo:base/p.vel, escala:p.H*1000/p.f,
     blur:p.vel*(1/p.obt)/gsd, gb:fotos.length*p.mb/1024};
 }
@@ -1054,13 +1074,14 @@ function calcular(){
     const p=leerParams(); guardarParams();
     const plan=planificar(S.poligono,p,S.home);
     S.plan=plan; mostrarResultados(plan); Mapa.dibujarPlan(plan); Sim.preparar(plan);
+    if(!ARTEFACTO) Zonas.revisarPlan(plan);
     $('secRes').style.display=''; $('secExp').style.display='';
     toast(`Plan listo: ${plan.lineas.length} líneas y ${plan.fotos.length.toLocaleString('es-CO')} fotos.`,'ok');
   }catch(e){ console.error(e); toast(esc(e.message),'bad',6000); }
 }
 function nuevoCalculo(){
   S.plan=null; S.home=null; S.poligono=null; S.poligonos=[]; Sim.ocultar(); Mapa.limpiarPlan(); Mapa.setArea(null); Mapa.setHome(null);
-  $('secRes').style.display='none'; $('secExp').style.display='none'; $('polyPick').style.display='none'; $('areaInfo').textContent='Sin área cargada.';
+  $('secRes').style.display='none'; $('secExp').style.display='none'; $('zonasRes').innerHTML=''; $('polyPick').style.display='none'; $('areaInfo').textContent='Sin área cargada.';
   toast('Listo para un nuevo cálculo.');
 }
 function sugerirAngulo(){
@@ -1131,6 +1152,10 @@ const Mapa = {
       m.addLayer({id:'grilla',type:'line',source:'grilla',paint:{'line-color':['case',['get','mayor'],'#2c4470','#1a2a46'],'line-width':['case',['get','mayor'],1.2,0.6]}});
       const src=['area','dibujo','huellas','lineas','transitos','fotos','tomadas','track','fpActual','ruta3d','dron','dronSombra'];
       src.forEach(s=>m.addSource(s,{type:'geojson',data:EMPTY}));
+      m.addSource('zonas',{type:'geojson',data:EMPTY});
+      const zc=['match',['get','cat'],'prohibida','#ef4444','limitada','#facc15','#f97316'];
+      m.addLayer({id:'zonas-f',type:'fill',source:'zonas',filter:['==',['geometry-type'],'Polygon'],paint:{'fill-color':zc,'fill-opacity':['match',['get','cat'],'limitada',0.10,0.22]}});
+      m.addLayer({id:'zonas-l',type:'line',source:'zonas',filter:['==',['geometry-type'],'Polygon'],paint:{'line-color':zc,'line-width':1.4,'line-opacity':0.9}});
       m.addLayer({id:'area-f',type:'fill',source:'area',paint:{'fill-color':'#f5a524','fill-opacity':0.10}});
       m.addLayer({id:'area-l',type:'line',source:'area',paint:{'line-color':'#f5a524','line-width':2.5}});
       m.addLayer({id:'huellas-l',type:'line',source:'huellas',layout:{visibility:'none'},paint:{'line-color':'#a78bfa','line-width':0.8,'line-opacity':0.6}});
@@ -1151,6 +1176,12 @@ const Mapa = {
       this.relieve($('chkTerr').checked);
       if(S.poligono) this.setArea(S.poligono);
       if(S.plan) this.dibujarPlan(S.plan);
+      if(!ARTEFACTO){ Zonas.ver($('chkZonas').checked);
+        let tz=null; m.on('moveend',()=>{ clearTimeout(tz); tz=setTimeout(()=>Zonas.porVista(),600); });
+        m.on('click','zonas-f',e=>{ if(this.modo) return; Zonas.popup(e); });
+        m.on('mouseenter','zonas-f',()=>{ if(!this.modo) m.getCanvas().style.cursor='pointer'; });
+        m.on('mouseleave','zonas-f',()=>{ if(!this.modo) m.getCanvas().style.cursor=''; }); }
+      else $('legZonas').style.display='none';
     });
     m.on('click',e=>this.click(e));
     m.on('dblclick',e=>{ if(this.modo==='dibujo'){ e.preventDefault(); this.terminarDibujo(); } });
@@ -1384,6 +1415,11 @@ const Export = {
 `;
     P.lineas.forEach(L=>{ k+=`<Style id="l${L.idx}"><LineStyle><color>${this.kmlColor(L.color)}</color><width>3</width></LineStyle><PolyStyle><color>${this.kmlColor(L.color,'40')}</color></PolyStyle></Style>\n`; });
     k+=`<Folder><name>Área de vuelo</name><Placemark><name>Polígono (${fmt(P.area/1e4,2)} ha)</name><styleUrl>#area</styleUrl><Polygon><tessellate>1</tessellate><outerBoundaryIs><LinearRing><coordinates>${[...S.poligono,S.poligono[0]].map(q=>c(q)).join(' ')}</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark></Folder>\n`;
+    const zk=Zonas.paraKML(P);
+    if(zk.length){
+      k+=`<Style id="zprohibida"><LineStyle><color>ff4444ef</color><width>2</width></LineStyle><PolyStyle><color>5a4444ef</color></PolyStyle></Style><Style id="zrestringida"><LineStyle><color>ff1673f9</color><width>2</width></LineStyle><PolyStyle><color>4a1673f9</color></PolyStyle></Style><Style id="zlimitada"><LineStyle><color>ff15ccfa</color><width>2</width></LineStyle><PolyStyle><color>2815ccfa</color></PolyStyle></Style>`;
+      k+=`<Folder><name>Zonas UAS Aerocivil (cercanas)</name>`+zk.map(f=>`<Placemark><name>${esc(f.properties.capa+': '+f.properties.nombre)}</name><description>${esc([f.properties.sub,f.properties.regla,f.properties.det].filter(Boolean).join(' — '))}</description><styleUrl>#z${f.properties.cat}</styleUrl>${Zonas.geomKML(f.geometry)}</Placemark>`).join('\n')+`</Folder>\n`;
+    }
     k+=`<Placemark><name>Despegue (H)</name><styleUrl>#home</styleUrl><Point><coordinates>${c(P.homeLL)}</coordinates></Point></Placemark>\n`;
     k+=`<Folder><name>Líneas de vuelo (${P.lineas.length})</name>`+P.lineas.map(L=>`<Placemark><name>Línea ${L.idx} – rumbo ${Math.round(L.rumbo)}°</name><styleUrl>#l${L.idx}</styleUrl><LineString><extrude>1</extrude><altitudeMode>relativeToGround</altitudeMode><coordinates>${c(L.aLL,H)} ${c(L.bLL,H)}</coordinates></LineString></Placemark>`).join('\n')+`</Folder>\n`;
     k+=`<Folder><name>Tránsitos</name>`+P.legs.filter(l=>!l.esLinea&&l.dist>0.5).map((l,i)=>`<Placemark><name>${esc(l.fase)}</name><styleUrl>#transito</styleUrl><LineString><altitudeMode>relativeToGround</altitudeMode><coordinates>${c(ll(l.p0[0],l.p0[1]),l.p0[2])} ${c(ll(l.p1[0],l.p1[1]),l.p1[2])}</coordinates></LineString></Placemark>`).join('\n')+`</Folder>\n`;
@@ -1494,6 +1530,7 @@ ${f.estudiante?`<h2>Estudiante</h2><table>${row('Nombre',f.estudiante)}${row('C�
 <h2>Apoyo terrestre</h2><table>${row('Sistema de referencia',f.datum)}${row('Método',f.metodo)}${row('Equipo GNSS',f.gnss)}${row('Puntos de control',f.gcp)}${row('Puntos de chequeo',f.chequeo)}${row('Base / estación',f.base)}</table>
 <h2>Condiciones</h2><table>${row('Pronóstico',f.clima)}${row('Viento',f.viento&&f.viento+' km/h')}${row('Índice Kp',f.kp)}${row('Nubosidad',f.nubes)}${row('Franja horaria',f.franja)}${row('Altura RTH',f.rth&&f.rth+' m')}</table>
 ${res}
+${P&&P.zonas?`<h2>Zonas UAS de la Aerocivil en el área de vuelo</h2>${P.zonas.hits.length?`<table>${P.zonas.hits.map(h=>`<tr><th>${esc(h.capa)}</th><td><b>${esc(h.nombre)}</b>${h.sub?' · '+esc(h.sub):''}<br>${esc(h.regla||'')}${h.det?'<br><small>'+esc(h.det)+'</small>':''}</td></tr>`).join('')}</table>`:'<p>No se encontraron zonas restringidas en el área de vuelo ni en el punto de despegue.</p>'}<p class="sub">Fuente: Visor Geográfico UAS – Aerocivil, consultado el ${esc(P.zonas.fecha)}. No incluye restricciones temporales (eventos, NOTAM).</p>`:''}
 <h2>Lista de chequeo prevuelo</h2><ul style="list-style:none">${chk}</ul>
 ${f.obs?`<h2>Observaciones</h2><p style="white-space:pre-wrap">${esc(f.obs)}</p>`:''}
 <div class="firmas"><div>Piloto al mando</div><div>Responsable del proyecto</div></div>
@@ -1556,6 +1593,85 @@ const Docs={
 
 
 /* =========================================================
+   ZONAS UAS DE LA AEROCIVIL (Visor Geográfico UAS – ArcGIS Online)
+   ========================================================= */
+const Zonas={
+  U:'https://services7.arcgis.com/oJtolNh5k8HxCVtB/arcgis/rest/services/UAS_WEBLAYER/FeatureServer',
+  VISOR:'https://aerocivil.maps.arcgis.com/apps/instant/media/index.html?appid=b4be4d501c8d4bcabd0c35297521c16e',
+  CAPAS:{80:'Área AIP',90:'Aviación deportiva',50:'Aeropuerto 6–9 km',40:'Aeropuerto 6 km',60:'Helipuerto 3 km',70:'Helipuerto 3 km',100:'Infraestructura aeronáutica',110:'Zona de no vuelo dron (ZNVD)'},
+  REGLA:{40:'Prohibido operar a menos de 6 km del punto de referencia del aeropuerto.',50:'Entre 6 y 9 km del aeropuerto la altura máxima es 61 m (200 ft).',60:'Prohibido operar a menos de 3 km del helipuerto.',70:'Prohibido operar a menos de 3 km del helipuerto.',100:'Infraestructura de navegación aérea: no sobrevolar.',110:'Zona de no vuelo dron: prohibido operar.',90:'Coordinar con la dependencia de tránsito aéreo.'},
+  feats:new Map(), activo:true, base:false, ultimo:'',
+  cap(s){ s=String(s||''); return s?s.charAt(0)+s.slice(1).toLowerCase():''; },
+  cat(id,p){ if(id===50) return 'limitada'; if(id===90) return 'restringida';
+    if(id===80){ const c=String(p['CLASIFICACIÓN']||'').toUpperCase(); return (c.includes('PROHIB')||c.includes('PELIGR'))?'prohibida':'restringida'; } return 'prohibida'; },
+  info(id,p){ let nombre='',sub='';
+    if(id===80||id===90){ nombre=[p.DESIGNADOR,this.cap(p['UBICACIÓN'])].filter(Boolean).join(' — '); sub=[this.cap(p['CLASIFICACIÓN']),p.LIMITES_VERTICALES,p.FRECUENCIA].filter(Boolean).join(' · '); }
+    else if(id===40||id===50){ nombre=p.NOMBRE_DEL_AD?(p.NOMBRE_DEL_AD+(p.DESIGNADOR_OACI?' ('+p.DESIGNADOR_OACI+')':'')):('Aeropuerto '+(p.DESIGNADOR_OACI||'')).trim(); sub=p.CIUDAD||''; }
+    else if(id===60||id===70){ nombre=String(p.NOMBRE||'').replace(/[,\s]+$/,'')||[p.NOMBRE_DEL_EXPLOTADOR,p.DESIGNADOR_OACI].filter(Boolean).join(' — ')||'Helipuerto'; sub=this.cap(p.MUNICIPIO||p.DEPARTAMENTO); }
+    else if(id===100){ nombre='Estación '+this.cap(p.ESTACION); }
+    else if(id===110){ nombre=p['UBICACIÓN']||'ZNVD'; sub=p.ENTIDAD||''; }
+    return {capa:this.CAPAS[id],nombre:String(nombre),sub:String(sub||''),regla:id===80?(this.cat(id,p)==='prohibida'?'Zona prohibida o peligrosa del AIP: no operar.':'Zona restringida del AIP: requiere autorización.'):(this.REGLA[id]||''),det:String(p.OBSERVACIONES||'')}; },
+  url(id,extra){ return `${this.U}/${id}/query?where=1%3D1&outFields=*&outSR=4326&geometryPrecision=6&f=geojson${extra||''}`; },
+  async consultar(id,extra){ const r=await fetch(this.url(id,extra)); if(!r.ok) throw new Error('HTTP '+r.status); const j=await r.json(); if(j.error) throw new Error(j.error.message||'error del servicio'); return j; },
+  agregar(id,fc){ (fc.features||[]).forEach(f=>{ if(!f.geometry) return; const p=f.properties||{}; const k=id+':'+(p.OBJECTID??p.FID??p.ID); if(this.feats.has(k)) return;
+    f.properties={id,k,cat:this.cat(id,p),...this.info(id,p)}; this.feats.set(k,f); }); },
+  pintar(){ Mapa.src('zonas',{type:'FeatureCollection',features:[...this.feats.values()]}); },
+  async iniciar(){ if(ARTEFACTO||this.base) return; this.base=true;
+    try{ const r=await Promise.all([80,90,50,40,60,70,100].map(id=>this.consultar(id).then(fc=>[id,fc])));
+      r.forEach(([id,fc])=>this.agregar(id,fc)); this.pintar(); this.porVista(); }
+    catch(e){ this.base=false; toast('No se pudieron cargar las zonas de la Aerocivil ('+esc(e.message)+'). Revise la conexión a internet.','warn',7000); } },
+  async porVista(){ if(ARTEFACTO||!this.activo||!Mapa.map) return; const m=Mapa.map; if(m.getZoom()<9) return;
+    const b=m.getBounds(); let w=Math.max(b.getWest(),-82), e=Math.min(b.getEast(),-66), s=Math.max(b.getSouth(),-4.5), n=Math.min(b.getNorth(),13.5);
+    if(e-w>1.5||n-s>1.5){ const c=m.getCenter(); w=c.lng-0.6; e=c.lng+0.6; s=c.lat-0.6; n=c.lat+0.6; }
+    const env=[w,s,e,n].map(v=>v.toFixed(3)).join(','); if(env===this.ultimo) return; this.ultimo=env;
+    try{ this.agregar(110,await this.consultar(110,`&geometry=${env}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects`)); this.pintar(); }catch(e){} },
+  ver(on){ this.activo=on; $('legZonas').style.display=on?'block':'none';
+    if(Mapa.listo) ['zonas-f','zonas-l'].forEach(l=>Mapa.map.setLayoutProperty(l,'visibility',on?'visible':'none'));
+    if(on){ this.iniciar(); this.porVista(); } },
+  popup(e){ const fs=e.features||[]; if(!fs.length) return; const col={prohibida:'#dc2626',restringida:'#ea580c',limitada:'#ca8a04'}, txt={prohibida:'Prohibido volar',restringida:'Restringido',limitada:'Altura máxima 61 m'};
+    const vistos=new Set(), html=fs.filter(f=>{const k=f.properties.k; if(vistos.has(k)) return false; vistos.add(k); return true;}).slice(0,3).map(f=>{ const p=f.properties;
+      return `<b class="z">${esc(p.nombre)}</b><span class="zcat" style="background:${col[p.cat]}">${txt[p.cat]}</span> <small>${esc(p.capa)}</small>${p.sub?`<div>${esc(p.sub)}</div>`:''}${p.regla?`<div>${esc(p.regla)}</div>`:''}${p.det?`<div style="color:#555;margin-top:3px;max-height:110px;overflow:auto;white-space:pre-wrap">${esc(p.det)}</div>`:''}`; }).join('<hr style="border:0;border-top:1px solid #ddd;margin:6px 0">');
+    new maplibregl.Popup({maxWidth:'330px'}).setLngLat(e.lngLat).setHTML(html+`<div style="margin-top:6px"><a href="${this.VISOR}" target="_blank" rel="noopener">Ver en el visor de la Aerocivil</a></div>`).addTo(Mapa.map); },
+  async revisarPlan(P){
+    const box=$('zonasRes'); box.innerHTML='<div class="w ok" style="opacity:.8">Consultando zonas UAS de la Aerocivil para el área de vuelo…</div>';
+    const ring=[...P.opArea,P.opArea[0]], geo=encodeURIComponent(JSON.stringify({rings:[ring],spatialReference:{wkid:4326}}));
+    const pt=encodeURIComponent(JSON.stringify({x:P.homeLL[0],y:P.homeLL[1],spatialReference:{wkid:4326}}));
+    const ids=[110,80,90,40,50,60,70,100], hits=[];
+    try{
+      await Promise.all(ids.map(async id=>{
+        for(const [g,t,donde] of [[geo,'esriGeometryPolygon','área de vuelo'],[pt,'esriGeometryPoint','despegue']]){
+          const fc=await this.consultar(id,`&geometry=${g}&geometryType=${t}&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=false`);
+          (fc.features||[]).forEach(f=>{ const p=f.properties||{}, i=this.info(id,p), k=id+':'+(p.OBJECTID??p.ID);
+            const h=hits.find(x=>x.k===k); if(h){ if(!h.donde.includes(donde)) h.donde.push(donde); } else hits.push({k,id,cat:this.cat(id,p),...i,donde:[donde]}); });
+        } }));
+      // zonas cercanas para el mapa y el KML
+      const b=P.opArea.reduce((a,q)=>[Math.min(a[0],q[0]),Math.min(a[1],q[1]),Math.max(a[2],q[0]),Math.max(a[3],q[1])],[180,90,-180,-90]);
+      const env=[b[0]-0.1,b[1]-0.1,b[2]+0.1,b[3]+0.1].map(v=>v.toFixed(4)).join(',');
+      try{ this.iniciar(); this.agregar(110,await this.consultar(110,`&geometry=${env}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects`)); this.pintar(); }catch(e){}
+    }catch(e){ box.innerHTML=`<div class="w warn">No se pudo consultar el Visor Geográfico UAS (${esc(e.message)}). Revise las zonas directamente en el <a href="${this.VISOR}" target="_blank" rel="noopener">visor de la Aerocivil</a>.</div>`; return; }
+    const orden={prohibida:0,limitada:1,restringida:2}; hits.sort((a,b)=>orden[a.cat]-orden[b.cat]);
+    P.zonas={hits,fecha:new Date().toLocaleString('es-CO')};
+    if(S.plan!==P) return;
+    const H=P.p.H, w=hits.map(h=>{ const d=h.donde.join(' y '), base=`<b>${esc(h.capa)}</b> — ${esc(h.nombre)}${h.sub?' ('+esc(h.sub)+')':''}. Toca: ${d}.`;
+      if(h.cat==='prohibida') return ['bad',base+' '+esc(h.regla)];
+      if(h.cat==='limitada') return H>61?['bad',base+` Altura máxima 61 m (200 ft) y el plan está a ${H} m: baje la altura o pida autorización.`]:['ok',base+` Altura máxima 61 m: el plan (${H} m) cumple.`];
+      return ['warn',base+' '+esc(h.regla)]; });
+    if(!w.length) w.push(['ok','Sin zonas UAS de la Aerocivil en el área de vuelo ni en el punto de despegue.']);
+    box.innerHTML=`<div style="font-size:12px;font-weight:700;color:var(--acc);margin-bottom:6px">ZONAS UAS · AEROCIVIL</div>`+w.map(([c,t])=>`<div class="w ${c}" style="margin-bottom:6px">${t}</div>`).join('')+
+      `<div class="hint">Consulta en línea del <a href="${this.VISOR}" target="_blank" rel="noopener">Visor Geográfico UAS</a>. No incluye restricciones temporales (eventos, NOTAM): confírmelas antes de volar.</div>`;
+    const prohib=hits.filter(h=>h.cat==='prohibida'||(h.cat==='limitada'&&H>61)).length;
+    if(prohib) toast(`Atención: el plan toca ${prohib} zona(s) donde no se puede volar así. Vea “Zonas UAS · Aerocivil” en los resultados.`,'bad',9000);
+  },
+  paraKML(P){ if(!this.feats.size) return []; const b=P.opArea.reduce((a,q)=>[Math.min(a[0],q[0]),Math.min(a[1],q[1]),Math.max(a[2],q[0]),Math.max(a[3],q[1])],[180,90,-180,-90]);
+    const m=0.12, B=[b[0]-m,b[1]-m,b[2]+m,b[3]+m];
+    return [...this.feats.values()].filter(f=>{ let x0=180,y0=90,x1=-180,y1=-90; const rec=c=>{ if(typeof c[0]==='number'){ x0=Math.min(x0,c[0]);x1=Math.max(x1,c[0]);y0=Math.min(y0,c[1]);y1=Math.max(y1,c[1]); } else c.forEach(rec); }; rec(f.geometry.coordinates);
+      return !(x1<B[0]||x0>B[2]||y1<B[1]||y0>B[3]); }); },
+  geomKML(g){ const ring=r=>`<LinearRing><coordinates>${r.map(c=>c[0].toFixed(6)+','+c[1].toFixed(6)+',0').join(' ')}</coordinates></LinearRing>`;
+    const poly=rs=>`<Polygon><tessellate>1</tessellate><outerBoundaryIs>${ring(rs[0])}</outerBoundaryIs>${rs.slice(1).map(x=>`<innerBoundaryIs>${ring(x)}</innerBoundaryIs>`).join('')}</Polygon>`;
+    if(g.type==='Polygon') return poly(g.coordinates); if(g.type==='MultiPolygon') return `<MultiGeometry>${g.coordinates.map(poly).join('')}</MultiGeometry>`; return ''; }
+};
+
+/* =========================================================
    NORMATIVA EMBEBIDA (PDF dentro del archivo)
    ========================================================= */
 const REFS=[
@@ -1607,7 +1723,8 @@ const Drive={
     const P=S.plan;
     Object.assign(o,{'Cámara del plan':P?P.p.nombreCam:'','Altura de vuelo (m)':P?P.p.H:'','GSD (cm/px)':P?+(P.gsd*100).toFixed(2):'','Solape lateral (%)':P?P.p.lat:'','Solape longitudinal (%)':P?P.p.lon:'',
       'Ángulo de vuelo (°)':P?P.p.ang:'','Área (ha)':P?+(P.area/1e4).toFixed(2):'','Líneas de vuelo':P?P.lineas.length:'','Total de fotos':P?P.fotos.length:'','Tiempo estimado (min)':P?+(P.T/60).toFixed(1):'',
-      'Baterías necesarias':P?P.baterias:'','Despegue (lat, lon)':P?P.homeLL[1].toFixed(6)+', '+P.homeLL[0].toFixed(6):''});
+      'Baterías necesarias':P?P.baterias:'','Despegue (lat, lon)':P?P.homeLL[1].toFixed(6)+', '+P.homeLL[0].toFixed(6):'',
+      'Zonas Aerocivil':P&&P.zonas?(P.zonas.hits.length?P.zonas.hits.map(h=>h.capa+': '+h.nombre).join(' | '):'Sin zonas en el área'):'Sin consultar'});
     return o;
   },
   async enviar(){
