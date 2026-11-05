@@ -1186,9 +1186,9 @@ const Mapa = {
     m.on('click',e=>this.click(e));
     m.on('dblclick',e=>{ if(this.modo==='dibujo'){ e.preventDefault(); this.terminarDibujo(); } });
     this.errTiles=0; this.okTiles=0;
-    m.on('sourcedata',e=>{ if(e.tile&&e.sourceId!=='dem'){ this.okTiles++; if(this.okTiles===1) $('avisoMapa').style.display='none'; } });
+    m.on('sourcedata',e=>{ if(e.tile&&e.sourceId!=='dem'&&e.sourceId!=='zonas'){ this.okTiles++; $('avisoMapa').style.display='none'; } });
     m.on('error',e=>{ if(ARTEFACTO) return; this.errTiles++; if(this.errTiles>=6&&!this.okTiles) this.aviso('No se están descargando las imágenes del mapa.'); });
-    if(!ARTEFACTO) setTimeout(()=>{ if(!this.okTiles) this.aviso('El mapa base no ha cargado después de 12 segundos.'); },12000);
+    if(!ARTEFACTO) setTimeout(()=>{ if(!this.okTiles) this.aviso('El mapa base todavía no carga.'); },25000);
     document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&this.modo) this.cancelarModo(); });
   },
   aviso(txt){
