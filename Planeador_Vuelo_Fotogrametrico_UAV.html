@@ -192,12 +192,12 @@ details.sec[open]>summary{margin-bottom:10px}
 .w.ok{background:#0f2a22;border:1px solid #1b5e49;color:#b6f5dd}
 .mapwrap{position:relative;overflow:hidden}
 #map{position:absolute;inset:0}
-.tool{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:5;background:rgba(10,17,30,.85);border:1px solid var(--line);padding:6px;border-radius:10px;backdrop-filter:blur(6px)}
+.tool{position:absolute;top:10px;left:10px;max-width:calc(100% - 20px);overflow-x:auto;scrollbar-width:none;white-space:nowrap;display:flex;gap:6px;z-index:5;background:rgba(10,17,30,.85);border:1px solid var(--line);padding:6px;border-radius:10px;backdrop-filter:blur(6px)}
 .tool select{width:auto;padding:5px 8px;font-size:12px}
 .tool .btn{padding:5px 9px;font-size:12px}
-.modebar{position:absolute;top:60px;left:50%;transform:translateX(-50%);z-index:6;background:var(--acc);color:#111;font-weight:700;padding:8px 14px;border-radius:9px;display:none;gap:10px;align-items:center}
+.modebar{position:absolute;top:62px;left:50%;transform:translateX(-50%);z-index:6;background:var(--acc);color:#111;font-weight:700;padding:8px 14px;border-radius:9px;display:none;gap:10px;align-items:center}
 .modebar .btn{padding:4px 9px;font-size:12px}
-.hud{position:absolute;top:12px;left:12px;z-index:5;width:250px;background:rgba(8,14,26,.86);border:1px solid var(--line);border-radius:12px;padding:11px 12px;backdrop-filter:blur(6px);display:none}
+.hud{position:absolute;top:62px;left:10px;z-index:5;width:250px;background:rgba(8,14,26,.86);border:1px solid var(--line);border-radius:12px;padding:11px 12px;backdrop-filter:blur(6px);display:none}
 .hud .st{font-weight:800;color:var(--acc);font-size:13px;margin-bottom:8px;display:flex;align-items:center;gap:7px}
 .hud .st i{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
 .hud table{width:100%;border-collapse:collapse;font-size:12px}
@@ -205,7 +205,7 @@ details.sec[open]>summary{margin-bottom:10px}
 .hud td:last-child{text-align:right;color:var(--txt);font-family:var(--mono)}
 .batt{height:7px;border-radius:4px;background:#22314f;overflow:hidden;margin-top:6px}
 .batt b{display:block;height:100%;background:var(--ok);width:100%}
-.camview{position:absolute;top:12px;right:12px;z-index:5;width:280px;background:rgba(8,14,26,.9);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+.camview{position:absolute;top:62px;right:10px;z-index:5;width:280px;background:rgba(8,14,26,.9);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
 .camview .hd{display:flex;justify-content:space-between;font-size:11px;padding:7px 10px;color:var(--mut);font-family:var(--mono)}
 .camview .hd b{color:#ff5b5b}
 #mini{position:relative;width:280px;height:187px;background:#000}
@@ -220,7 +220,7 @@ details.sec[open]>summary{margin-bottom:10px}
 .flash.go{animation:fl .28s ease-out}
 @keyframes fl{0%{opacity:.85}100%{opacity:0}}
 .camview .ft{font-size:11px;padding:6px 10px;color:var(--mut);font-family:var(--mono);display:flex;justify-content:space-between}
-.simbar{position:absolute;left:12px;right:12px;bottom:34px;z-index:5;background:rgba(8,14,26,.9);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:none;align-items:center;gap:10px;backdrop-filter:blur(6px)}
+.simbar{position:absolute;left:10px;right:10px;bottom:30px;z-index:5;background:rgba(8,14,26,.9);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:none;align-items:center;gap:10px;backdrop-filter:blur(6px)}
 .simbar select{width:auto;padding:5px 8px;font-size:12px}
 .simbar .t{font-family:var(--mono);font-size:12px;color:var(--mut);white-space:nowrap}
 .simbar input[type=range]{flex:1}
@@ -238,7 +238,8 @@ details.sec[open]>summary{margin-bottom:10px}
 .maplibregl-popup-content{color:#111;font-size:12px;line-height:1.45;max-width:320px;padding:10px 12px}
 .maplibregl-popup-content b.z{display:block;font-size:13px}
 .zcat{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;color:#fff;margin:3px 0}
-#legZonas{position:absolute;right:12px;bottom:110px;z-index:4;background:rgba(8,14,26,.85);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:11px;color:var(--mut)}
+#legZonas{position:absolute;right:12px;bottom:110px;z-index:4;background:rgba(8,14,26,.85);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:11px;color:var(--mut);display:none}
+.legend.on,#legZonas.on{display:block}
 #legZonas div{display:flex;align-items:center;gap:7px;margin:2px 0}
 #legZonas i{width:14px;height:10px;border-radius:2px;display:inline-block}
 body.artefacto .solo-html{display:none!important}
@@ -248,7 +249,109 @@ body:not(.artefacto) .solo-art{display:none!important}
 #dlg{display:none;position:fixed;inset:0;z-index:95;background:rgba(3,7,15,.7);align-items:center;justify-content:center}
 #dlg .in{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(420px,92vw);box-shadow:0 20px 50px rgba(0,0,0,.5)}
 #dlg p{margin:0 0 12px;line-height:1.5}
-@media (max-width:980px){.cards{grid-template-columns:1fr}#view-plan.active{grid-template-columns:1fr;grid-template-rows:auto 70vh;overflow:auto}aside{max-height:none}.camview{width:200px}#mini{width:200px}.hud{width:200px}}
+/* ---------- RESPONSIVE ---------- */
+.t-sm{display:none}
+nav button{display:inline-flex;align-items:center;gap:7px}
+nav .ni{display:none}
+.bt-ley{display:none}
+.tool::-webkit-scrollbar{display:none}
+.hud.min table,.hud.min .batt{display:none}
+.hud.min{width:auto!important}
+.cards{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+nav{flex-wrap:nowrap}
+.tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.tabs button{white-space:nowrap}
+.hero h1{font-size:clamp(24px,4.2vw,36px)}
+/* pantallas grandes */
+@media (min-width:1600px){
+  #view-plan.active{grid-template-columns:410px 1fr}
+  .home,.page{max-width:1280px}
+  body{font-size:14.5px}
+}
+/* portátiles */
+@media (max-width:1280px){
+  #view-plan.active{grid-template-columns:340px 1fr}
+  header small{display:none}
+  nav button{padding:8px 10px}
+}
+/* mapa angosto en portátil: cámara más pequeña */
+@media (max-width:1180px) and (min-width:1001px){
+  .camview{width:230px} #mini{width:230px}
+}
+/* tabletas y celulares: el mapa arriba y los parámetros debajo */
+@media (max-width:1000px){
+  .grid3{grid-template-columns:1fr 1fr}
+  #view-plan.active{display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+  #view-plan .mapwrap{order:-1;flex:none;height:max(330px,62vh);height:max(330px,62dvh)}
+  aside{border-right:0;border-top:1px solid var(--line);overflow:visible;padding-bottom:24px}
+  .page,.home{padding-left:18px;padding-right:18px}
+  .camview{width:200px} #mini{width:200px}
+  .hud{width:215px}
+  .legend.on,#legZonas.on{display:none}
+  body.ver-ley .legend.on,body.ver-ley #legZonas.on{display:block}
+  .bt-ley{display:inline-flex}
+  .legend{bottom:118px} #legZonas{bottom:118px}
+  .modebar{left:10px;right:10px;transform:none;flex-wrap:wrap;font-size:13px}
+}
+/* tabletas: nombres cortos para que el menú quepa en una línea */
+@media (max-width:900px){
+  .brand .t-lg{display:none} .brand .t-sm{display:inline}
+  nav .t-lg{display:none} nav .t-sm{display:inline}
+}
+/* celulares */
+@media (max-width:700px){
+  header{height:52px;padding:0 12px}
+  .brand .t-lg{display:none} .brand .t-sm{display:inline}
+  .brand svg{width:30px;height:30px}
+  main{height:calc(100% - 52px - 62px)}
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:60;height:62px;margin:0;background:#0d1729;border-top:1px solid var(--line);
+      display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
+  nav button{flex-direction:column;justify-content:center;gap:3px;padding:4px 2px;border-radius:10px;font-size:11px;font-weight:600}
+  nav .ni{display:block}
+  nav .t-lg{display:none} nav .t-sm{display:inline}
+  nav button.on{background:rgba(245,165,36,.16);color:var(--acc)}
+  .home{padding:24px 16px 40px} .page{padding:20px 14px 40px}
+  .hero p{font-size:14px}
+  .cards{margin-top:22px;gap:12px}
+  .card{padding:18px}
+  .ge{flex-direction:column;align-items:flex-start;padding:14px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  aside .grid2{grid-template-columns:1fr 1fr}
+  .box{padding:14px}
+  .checks{grid-template-columns:1fr}
+  .stickybar{gap:6px;justify-content:stretch}
+  .stickybar>*{flex:1 1 calc(50% - 6px);padding:9px 6px;font-size:12px}
+  .doclist{grid-template-columns:1fr}
+  input,select,textarea{font-size:16px}   /* evita el zoom automático en iPhone */
+  #view-plan .mapwrap{height:max(300px,58vh);height:max(300px,58dvh)}
+  .tool{top:8px;left:8px;max-width:calc(100% - 16px);padding:5px;gap:5px}
+  .tool select,.tool .btn{font-size:11.5px;padding:4px 7px}
+  .hud{top:56px;left:8px;width:158px;padding:8px 9px}
+  .hud .st{font-size:11.5px;margin-bottom:5px}
+  .hud table{font-size:10.5px}
+  .hud .hx{display:none}
+  .camview{top:56px;right:8px;width:128px} #mini{width:128px}
+  .camview .hd,.camview .ft{font-size:9.5px;padding:4px 6px}
+  .camview .hd span:first-child{display:none}
+  .simbar{left:6px;right:6px;bottom:26px;flex-wrap:wrap;gap:6px 8px;padding:8px}
+  .simbar input[type=range]{order:5;flex:1 1 100%}
+  .simbar select{font-size:12px;padding:4px 6px;max-width:42%}
+  .play{width:36px;height:36px}
+  .cvlab{display:none!important}
+  .legend,#legZonas{bottom:120px;font-size:10.5px}
+  #legZonas{right:8px} .legend{left:8px}
+  #avisoArt{top:auto!important;bottom:120px;right:8px!important;max-width:calc(100% - 16px)!important}
+  #toasts{bottom:72px;left:10px;right:10px;max-width:none}
+  .maplibregl-ctrl-attrib{font-size:9px}
+  .mcaja{inset:0!important;border-radius:0!important}
+  .mcaja>div:first-child{flex-wrap:wrap}
+  #avisoMapa{max-width:calc(100% - 24px)!important;font-size:12.5px!important}
+}
+/* celular acostado (poca altura) */
+@media (max-height:500px) and (orientation:landscape){
+  #view-plan .mapwrap{height:max(300px,80vh)}
+  .hud .hx{display:none}
+}
 </style>
 </head>
 <body>
@@ -256,13 +359,13 @@ body:not(.artefacto) .solo-art{display:none!important}
 <header>
   <div class="brand" onclick="irA('home')">
     <svg width="34" height="34" viewBox="0 0 48 48" fill="none"><rect x="1" y="1" width="46" height="46" rx="12" fill="#152238" stroke="#243556"/><circle cx="13" cy="13" r="6" stroke="#f5a524" stroke-width="2.4"/><circle cx="35" cy="13" r="6" stroke="#f5a524" stroke-width="2.4"/><circle cx="13" cy="35" r="6" stroke="#f5a524" stroke-width="2.4"/><circle cx="35" cy="35" r="6" stroke="#f5a524" stroke-width="2.4"/><path d="M17 17l14 14M31 17L17 31" stroke="#e7eef8" stroke-width="3" stroke-linecap="round"/><rect x="20" y="20" width="8" height="8" rx="2" fill="#22d3ee"/></svg>
-    <div>Planeador de Vuelo Fotogramétrico UAV<small>Cálculo · Simulación · Google Earth Pro</small></div>
+    <div><span class="t-lg">Planeador de Vuelo Fotogramétrico UAV</span><span class="t-sm">Planeador UAV</span><small>Cálculo · Simulación · Google Earth Pro</small></div>
   </div>
   <nav>
-    <button data-v="home" class="on" onclick="irA('home')">Inicio</button>
-    <button data-v="docs" onclick="irA('docs')">Documentación</button>
-    <button data-v="form" onclick="irA('form')">Formulario</button>
-    <button data-v="plan" onclick="irA('plan')">Planeación de vuelo</button>
+    <button data-v="home" class="on" onclick="irA('home')"><svg class="ni" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Inicio</span></button>
+    <button data-v="docs" onclick="irA('docs')"><svg class="ni" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg><span class="t-lg">Documentación</span><span class="t-sm">Docs</span></button>
+    <button data-v="form" onclick="irA('form')"><svg class="ni" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>Formulario</span></button>
+    <button data-v="plan" onclick="irA('plan')"><svg class="ni" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 20l6-16 3 7 3-4 6 13z"/></svg><span class="t-lg">Planeación de vuelo</span><span class="t-sm">Planear</span></button>
   </nav>
 </header>
 
@@ -653,21 +756,22 @@ body:not(.artefacto) .solo-art{display:none!important}
       <label class="solo-html" style="display:flex;align-items:center;gap:5px;margin:0;color:var(--txt);font-size:12px;padding:0 4px" title="Visor Geográfico UAS – Aerocivil"><input type="checkbox" id="chkZonas" checked onchange="Zonas.ver(this.checked)"> Zonas Aerocivil</label>
       <label style="display:flex;align-items:center;gap:5px;margin:0;color:var(--txt);font-size:12px;padding:0 4px"><input type="checkbox" id="chkFp" onchange="Mapa.verHuellas(this.checked)"> Huellas planeadas</label>
       <button class="btn" onclick="Mapa.encuadrar()">Encuadrar</button>
+      <button class="btn bt-ley" onclick="document.body.classList.toggle('ver-ley')">Leyenda</button>
     </div>
     <div class="modebar" id="modebar"><span id="modeTxt"></span><button class="btn" id="modeOk">Terminar</button><button class="btn" onclick="Mapa.cancelarModo()">Cancelar</button></div>
 
-    <div class="hud" id="hud">
+    <div class="hud" id="hud" onclick="if(innerWidth<=700) this.classList.toggle('min')" title="Toque para minimizar">
       <div class="st"><i></i><span id="hEstado">Listo</span></div>
       <table>
         <tr><td>Tiempo de vuelo</td><td id="hT">00:00</td></tr>
-        <tr><td>Tiempo restante</td><td id="hTR">—</td></tr>
+        <tr class="hx"><td>Tiempo restante</td><td id="hTR">—</td></tr>
         <tr><td>Velocidad</td><td id="hV">0.0 m/s</td></tr>
         <tr><td>Altura (AGL)</td><td id="hZ">0 m</td></tr>
-        <tr><td>Rumbo</td><td id="hRumbo">0°</td></tr>
+        <tr class="hx"><td>Rumbo</td><td id="hRumbo">0°</td></tr>
         <tr><td>Línea</td><td id="hL">—</td></tr>
         <tr><td>Fotos tomadas</td><td id="hF">0 / 0</td></tr>
-        <tr><td>Distancia recorrida</td><td id="hD">0 m</td></tr>
-        <tr><td>Posición</td><td id="hPos" style="font-size:11px">—</td></tr>
+        <tr class="hx"><td>Distancia recorrida</td><td id="hD">0 m</td></tr>
+        <tr class="hx"><td>Posición</td><td id="hPos" style="font-size:11px">—</td></tr>
         <tr><td>Batería</td><td id="hB">1 · 100%</td></tr>
       </table>
       <div class="batt"><b id="hBbar"></b></div>
@@ -704,7 +808,7 @@ body:not(.artefacto) .solo-art{display:none!important}
       <select id="sCam" onchange="Sim.camara(this.value)" title="Vista">
         <option value="chase">Seguimiento 3D (detrás del dron)</option><option value="top">Cenital</option><option value="free">Libre</option>
       </select>
-      <label class="solo-html"><input type="checkbox" id="sCv" checked onchange="document.getElementById('camview').style.display=this.checked?'block':'none'"> Vista cámara</label>
+      <label class="solo-html cvlab"><input type="checkbox" id="sCv" checked onchange="document.getElementById('camview').style.display=this.checked?'block':'none'"> Vista cámara</label>
     </div>
   </div>
 </section>
@@ -712,7 +816,7 @@ body:not(.artefacto) .solo-art{display:none!important}
 <div id="toasts"></div>
 <div id="dlg"><div class="in"><p id="dlgTxt"></p><input id="dlgIn" style="margin-bottom:12px"><div class="row" style="justify-content:flex-end"><button class="btn" id="dlgNo">Cancelar</button><button class="btn pri" id="dlgSi">Aceptar</button></div></div></div>
 <div id="infModal" style="display:none;position:fixed;inset:0;z-index:91;background:rgba(3,7,15,.82)">
-  <div style="position:absolute;inset:24px;background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;overflow:hidden">
+  <div class="mcaja" style="position:absolute;inset:24px;background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;overflow:hidden">
     <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)"><b style="flex:1">Informe de planeación</b>
       <button class="btn sm" onclick="Informe.bajarHtml()">Descargar (HTML)</button>
       <button class="btn sm pri" onclick="Drive.enviar()">Guardar en Drive</button>
@@ -721,7 +825,7 @@ body:not(.artefacto) .solo-art{display:none!important}
   </div>
 </div>
 <div id="pdfModal" style="display:none;position:fixed;inset:0;z-index:90;background:rgba(3,7,15,.82);backdrop-filter:blur(3px)">
-  <div style="position:absolute;inset:24px;background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;overflow:hidden">
+  <div class="mcaja" style="position:absolute;inset:24px;background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;overflow:hidden">
     <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)">
       <b id="pdfTitulo" style="flex:1"></b>
       <button class="btn sm" onclick="Refs.descargar()">Descargar</button>
@@ -1181,7 +1285,7 @@ const Mapa = {
         m.on('click','zonas-f',e=>{ if(this.modo) return; Zonas.popup(e); });
         m.on('mouseenter','zonas-f',()=>{ if(!this.modo) m.getCanvas().style.cursor='pointer'; });
         m.on('mouseleave','zonas-f',()=>{ if(!this.modo) m.getCanvas().style.cursor=''; }); }
-      else $('legZonas').style.display='none';
+      else $('legZonas').classList.remove('on');
     });
     m.on('click',e=>this.click(e));
     m.on('dblclick',e=>{ if(this.modo==='dibujo'){ e.preventDefault(); this.terminarDibujo(); } });
@@ -1211,7 +1315,10 @@ const Mapa = {
   encuadrar(){
     if(!this.map) return; const c=S.poligono; if(!c) return;
     let b=new maplibregl.LngLatBounds(c[0],c[0]); c.forEach(p=>b.extend(p)); if(S.plan) S.plan.fotos.forEach(f=>b.extend(f.ll));
-    this.map.fitBounds(b,{padding:{top:80,bottom:120,left:280,right:310},pitch:S.plan?45:0,bearing:0,duration:900,maxZoom:18});
+    const W=this.map.getContainer().clientWidth, H=this.map.getContainer().clientHeight;
+    const pad=W<=700?{top:60,bottom:110,left:20,right:20}:W<=1000?{top:70,bottom:110,left:40,right:40}:{top:80,bottom:120,left:Math.min(280,W*0.25),right:Math.min(310,W*0.28)};
+    if(pad.top+pad.bottom>H*0.8){ pad.top=Math.round(H*0.15); pad.bottom=Math.round(H*0.25); }
+    this.map.fitBounds(b,{padding:pad,pitch:S.plan?45:0,bearing:0,duration:900,maxZoom:18});
   },
   limpiarPlan(){ ['huellas','lineas','transitos','fotos','tomadas','track','fpActual','ruta3d','dron','dronSombra'].forEach(s=>this.src(s,EMPTY)); },
   dibujarPlan(P){
@@ -1231,7 +1338,7 @@ const Mapa = {
     });
     this.src('ruta3d',{type:'FeatureCollection',features:feats});
     this.src('tomadas',EMPTY); this.src('track',EMPTY);
-    this.setHome(P.homeLL); this.encuadrar(); $('legend').style.display='block';
+    this.setHome(P.homeLL); this.encuadrar(); $('legend').classList.add('on');
   },
   // -------- modos de interacción --------
   modoDibujo(){ this.init(); this.modo='dibujo'; this.dibujo=[]; this.src('dibujo',EMPTY); this.mostrarModo('Haga clic para poner vértices · doble clic o “Terminar” para cerrar',()=>this.terminarDibujo()); },
@@ -1282,7 +1389,7 @@ const Sim = {
     this.mult=+$('sVel').value; this.modoCam=$('sCam').value;
     if(!this.loopOn){ this.loopOn=true; requestAnimationFrame(ts=>this.loop(ts)); }
   },
-  ocultar(){ this.playing=false; this.P=null; ['hud','simbar','camview','legend'].forEach(id=>$(id).style.display='none'); },
+  ocultar(){ this.playing=false; this.P=null; ['hud','simbar','camview'].forEach(id=>$(id).style.display='none'); $('legend').classList.remove('on'); },
   initMini(P){
     const w=$('mini').clientWidth||280, h=Math.round(w*P.p.filas/P.p.cols); $('mini').style.height=h+'px';
     if(!this.mini && typeof maplibregl!=='undefined'){
@@ -1625,7 +1732,7 @@ const Zonas={
     if(e-w>1.5||n-s>1.5){ const c=m.getCenter(); w=c.lng-0.6; e=c.lng+0.6; s=c.lat-0.6; n=c.lat+0.6; }
     const env=[w,s,e,n].map(v=>v.toFixed(3)).join(','); if(env===this.ultimo) return; this.ultimo=env;
     try{ this.agregar(110,await this.consultar(110,`&geometry=${env}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects`)); this.pintar(); }catch(e){} },
-  ver(on){ this.activo=on; $('legZonas').style.display=on?'block':'none';
+  ver(on){ this.activo=on; $('legZonas').classList.toggle('on',on);
     if(Mapa.listo) ['zonas-f','zonas-l'].forEach(l=>Mapa.map.setLayoutProperty(l,'visibility',on?'visible':'none'));
     if(on){ this.iniciar(); this.porVista(); } },
   popup(e){ const fs=e.features||[]; if(!fs.length) return; const col={prohibida:'#dc2626',restringida:'#ea580c',limitada:'#ca8a04'}, txt={prohibida:'Prohibido volar',restringida:'Restringido',limitada:'Altura máxima 61 m'};
@@ -1774,6 +1881,13 @@ window.addEventListener('DOMContentLoaded',()=>{
   const g=document.getElementById('gs-src'); if(g) $('gsCodigo').value=g.textContent.trim();
   Refs.render();
 });
+// al girar el celular o cambiar el tamaño de la ventana, el mapa y la vista de cámara se reacomodan
+let tRes=null;
+window.addEventListener('resize',()=>{ clearTimeout(tRes); tRes=setTimeout(()=>{
+  if(Mapa.map) Mapa.map.resize();
+  if(Sim.mini&&S.plan){ const w=$('mini').clientWidth||200; $('mini').style.height=Math.round(w*S.plan.p.filas/S.plan.p.cols)+'px'; Sim.mini.resize(); }
+  if(innerWidth>700) $('hud').classList.remove('min');
+},150); });
 // si el usuario editó parámetros de cámara, se respetan al calcular
 </script>
 <script type="text/plain" id="gs-src">
